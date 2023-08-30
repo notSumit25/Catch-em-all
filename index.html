@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link rel="stylesheet" href="style.css" /> -->
+    <title>Catch em all</title>
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    html,
+    body {
+      height: 100%;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: rgb(58, 129, 0);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .score {
+      font-size: 4em;
+      margin-bottom: 0.5em;
+    }
+    .board {
+      height: 600px;
+      width: 600px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 80px;
+    }
+    .hole {
+      background-color: rgb(165, 85, 11);
+      border-radius: 50%;
+      box-shadow: inset 0 10px 0 7px rgb(53, 21, 6),
+        inset 0 20px 20px 15px rgba(0, 0, 0, 0.3), 0 0 5px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .hole .mole {
+      width: 70%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      animation: rise 0.3s ease-out;
+    }
+    @keyframes rise {
+      0% {
+        transform: translateX(-50%) translateY(100%);
+      }
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .cursor {
+      height: 70px;
+      width: 60px;
+      position: absolute;
+      top: 100px;
+      left: 100px;
+      background-image: url("assets/pokeball.png");
+      background-size: 100% 100%;
+      transform: translate(-20%, -20%);
+      transition: transform 0.1s;
+      pointer-events: none;
+    }
+    .cursor.active {
+      transform: translate(-20%, -20%) rotate(-45deg);
+    }
+
+    .time {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+    }
+    .main {
+      display: flex;
+      gap: 60px;
+    }
+    .title {
+      font-size: xx-large;
+      margin-bottom: 70px;
+      color: white;
+    }
+    .Rules {
+      margin-top: 30px;
+    }
+    h3 {
+      margin-top: 5px;
+    }
+  </style>
+  <body>
+    <div class="main">
+      <div>
+        <div class="title">
+          <h1>Catch 'em All</h1>
+        </div>
+        <h1 class="score">SCORE: <span>00</span></h1>
+        <div class="time">
+          <h2>Time Left:</h2>
+          <h2 id="time-left">60</h2>
+        </div>
+        <div class="Rules">
+          <h2>Rules:</h2>
+          <h3>Total Time: 60 Seconds</h3>
+          <h3>Score for each Pokemon caught is Different</h3>
+          <h3>Pikachu: 30</h3>
+          <h3>Squirtle: 20</h3>
+          <h3>Charmander: 10</h3>
+          <h3>MewTwo: -50 (Beware of Mewtwo, She is extremely Powerful)</h3>
+          <h3>Refresh the Page to Restart</h3>
+          <h3>Last but not the least, Catch em all!!!!</h3>
+        </div>
+      </div>
+      <div class="board">
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+        <div class="hole"></div>
+      </div>
+      <div class="cursor"></div>
+    </div>
+
+    <script>
+      const cursor = document.querySelector(".cursor");
+      const holes = [...document.querySelectorAll(".hole")];
+      const scoreEl = document.querySelector(".score span");
+      const timeLeft = document.querySelector("#time-left");
+
+      let score = 0;
+      let timeRemaining = 60;
+
+      const sound = new Audio("assets/sound.mp3");
+
+      function run() {
+        const pokemons = [
+          { src: "assets/pikachu.png", score: 30 },
+          { src: "assets/Charmander.png", score: 10 },
+          { src: "assets/Squirtle.png", score: 20 },
+          { src: "assets/Mewtwo.png", score: -50 },
+        ];
+        const randomPokemonIndex = Math.floor(Math.random() * pokemons.length);
+        const randomPokemon = pokemons[randomPokemonIndex];
+        const i = Math.floor(Math.random() * holes.length);
+        const hole = holes[i];
+        let timer = null;
+        timeLeft.textContent = timeRemaining;
+        timer = setTimeout(() => {
+          hole.removeChild(img);
+          if (timeRemaining > 0) {
+            timeRemaining--;
+            run();
+          } else {
+            alert("Game Over! Your final score: " + score);
+          }
+        }, 800);
+
+        const img = document.createElement("img");
+        img.classList.add("mole");
+        img.src = randomPokemon.src;
+
+        img.addEventListener("click", () => {
+          score += randomPokemon.score;
+          sound.play();
+          scoreEl.textContent = score;
+          clearTimeout(timer);
+          setTimeout(() => {
+            hole.removeChild(img);
+            run();
+          }, 500);
+        });
+
+        hole.appendChild(img);
+
+        timer = setTimeout(() => {
+          hole.removeChild(img);
+          run();
+        }, 1500);
+      }
+      run();
+
+      window.addEventListener("mousemove", (e) => {
+        cursor.style.top = e.pageY + "px";
+        cursor.style.left = e.pageX + "px";
+      });
+      window.addEventListener("mousedown", () => {
+        cursor.classList.add("active");
+      });
+      window.addEventListener("mouseup", () => {
+        cursor.classList.remove("active");
+      });
+    </script>
+  </body>
+</html>
